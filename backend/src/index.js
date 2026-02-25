@@ -1,47 +1,61 @@
+require('dotenv').config();
 const express = require('express');
+const http = require('http');         // needed for Socket.io (Phase 1)
+const { Server } = require('socket.io'); // Socket.io (Phase 1)
 const connectDB = require('../config/db.js');
 const cors = require('cors');
-const mongoose = require('mongoose');
-require('dotenv').config();
 
-const app = express();  
+const app = express();
+const server = http.createServer(app); // wrap Express with http server
 
-// Import routes
-const emailRoutes = require('../routes/emailRoutes');
-const collectionRoutes = require('../routes/collection.js'); 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Define Routes
-app.use('/api/auth', require('../routes/auth.js'));
-app.use('/api/email', require('../routes/emailRoutes'));
-app.use('/api/collection', collectionRoutes);
-
-
-// Set the MongoDB URI directly
-const MONGO_URI = "mongodb://localhost:27017/auction";
-const JWT_SECRET = "525eb5240ab9e6dc529f4723bcd8de8d675dbbfee6a6705c9ed6e27d9be7f4f8c435d27cfbf89eb5657e5e164d93bdf3eedd28f674c2fdc6e4a68466c0399a9a";
-
-// Log to confirm the values
-console.log("MONGO_URI:", MONGO_URI);
-console.log("JWT_SECRET:", JWT_SECRET);
-
-// Connect to MongoDB
-connectDB(MONGO_URI); // Pass MONGO_URI to connectDB
-
-// Error Handling for Unknown Routes
-app.use((req, res, next) => {
-    res.status(404).json({ message: "Route not found" });
+// ─── Socket.io Setup (Phase 1 will build on this) ───────────────────────────
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:3001', // React dev server
+        methods: ['GET', 'POST'],
+    },
 });
 
-// Start the server
-const PORT = 3000;
+// Make io accessible in routes (we'll use this in Phase 1)
+app.set('io', io);
 
-app.listen(PORT, (err) => {
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '10mb' })); // allow image uploads
+
+// Import Routes
+const authRoutes = require('../routes/auth.js');
+const emailRoutes = require('../routes/emailRoutes');
+const collectionRoutes = require('../routes/collection.js');
+
+// Define Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/email', emailRoutes);
+app.use('/api/collection', collectionRoutes);
+
+// Error Handling for Unknown Routes
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+// Connect to MongoDB (from .env only — never hardcode!)
+connectDB(process.env.MONGO_URI);
+
+// Start Server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, (err) => {
     if (err) {
-        console.error("Failed to start the server:", err.message);
+        console.error('Failed to start server:', err.message);
     } else {
-        console.log(`Server is running on port ${PORT}`);
+        console.log(`Server running on http://localhost:${PORT}`);
     }
-});1
+});
