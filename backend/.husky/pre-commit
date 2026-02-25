@@ -1,2 +1,2 @@
 #!/bin/sh
-npx lint-staged
+cd backend && npx lint-staged
