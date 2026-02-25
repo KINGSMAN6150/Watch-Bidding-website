@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Sub-schema for individual bids
 const BidSchema = new mongoose.Schema({
     bidder: {
         type: mongoose.Schema.Types.ObjectId,
@@ -51,10 +50,9 @@ const WatchSchema = new mongoose.Schema({
         required: true,
     },
     image: {
-        type: String, // base64 or URL — will migrate to Cloudinary in Phase 4
+        type: String,
         required: true,
     },
-    // ── New Fields ──────────────────────────────────────────────
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -65,12 +63,12 @@ const WatchSchema = new mongoose.Schema({
         enum: ['active', 'sold', 'expired'],
         default: 'active',
     },
-    bids: [BidSchema], // full bid history
+    bids: [BidSchema],
     winner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null,
     },
-}, { timestamps: true }); // adds createdAt, updatedAt automatically
+}, { timestamps: true });
 
 module.exports = mongoose.model('Watch', WatchSchema);
