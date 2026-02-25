@@ -44,19 +44,21 @@ const Sell = () => {
 
         // Send data to backend
         try {
-            const response = await fetch('http://localhost:5000/api/collection', {
+            const token = localStorage.getItem('token'); // JWT from login
+            const response = await fetch('http://localhost:3000/api/collection', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-auth-token': token, // required by authMiddleware
                 },
                 body: JSON.stringify(formData),
             });
             if (response.ok) {
-                alert('Watch information submitted successfully!');
-                // Reset form fields after submission
+                alert('Watch listed for auction successfully!');
                 resetForm();
             } else {
-                alert('Failed to submit the watch information.');
+                const err = await response.json();
+                alert(err.message || 'Failed to submit the watch information.');
             }
         } catch (error) {
             console.error('Error submitting watch information:', error);
