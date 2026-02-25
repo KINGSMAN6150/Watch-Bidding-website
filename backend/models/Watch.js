@@ -17,6 +17,7 @@ const BidSchema = new mongoose.Schema({
 });
 
 const a = 0;
+const b = 0;
 
 const WatchSchema = new mongoose.Schema({
     name: {
