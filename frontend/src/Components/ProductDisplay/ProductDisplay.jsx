@@ -7,52 +7,52 @@ import BiddingModal from '../BiddingModal/BiddingModal';
 import { io } from "socket.io-client";
 
 const ProductDisplay = () => {
-    const { productName } = useParams();
+    const { productName: rawProductName } = useParams();
+    const productName = decodeURIComponent(rawProductName || '');
     const [product, setProduct] = useState(null);
     const [currentBid, setCurrentBid] = useState(null);
     const [error, setError] = useState(null);
     const { addToCart } = useContext(ShopContext);
     const [isModalOpen, setModalOpen] = useState(false);
     const [canBid, setCanBid] = useState(false); // State for individual product bidding
+    const userId = localStorage.getItem('userId');
 
-    // Socket connection for real-time bid updates
+
     useEffect(() => {
-        const socket = io("http://localhost:5000");
+        if (!product) return;
 
-        // Listen for bid updates
-        socket.on("bidUpdate", (data) => {
-            if (data.name === productName) {
-                setCurrentBid(data.currentBid);
+        const socket = io("http://localhost:3000");
+        socket.emit("join-auction", product._id);
+        socket.on("bid-updated", ({ watchId, newBid }) => {
+            if (watchId === product._id) {
+                setCurrentBid(newBid);
             }
         });
-
-        return () => socket.disconnect();
-    }, [productName]);
+        return () => {
+            socket.emit("leave-auction", product._id);
+            socket.disconnect();
+        }
+    }, [product]);
 
     // Fetch product details initially
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/collection?name=${encodeURIComponent(productName)}`);
+                const response = await fetch(`http://localhost:3000/api/collection`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
-                if (data) {
-                    setProduct(data);
-                    setCurrentBid(data.currentBid); // Ensure this points to the current bid
 
-                    // Check auction end time and determine if bidding should be disabled
-                    const auctionEndTime = new Date(data.auction_end_time);
-                    const currentTime = new Date();
+                // Backend returns an array — find the matching watch by name
+                const watch = Array.isArray(data)
+                    ? data.find(w => w.name === productName)
+                    : data;
 
-                    // Calculate the difference in minutes
-                    const timeLeft = (auctionEndTime - currentTime) / (1000 * 60); // Difference in minutes
-
-                    // Disable bidding if time left is less than 15 minutes
-                    if (timeLeft <= 15) {
-                        setCanBid(false);
-                    } else {
-                        setCanBid(true);
-                    }
+                if (watch) {
+                    setProduct(watch);
+                    setCurrentBid(watch.currentBid);
+                    const auctionEndTime = new Date(watch.auction_end_time);
+                    const timeLeft = (auctionEndTime - new Date()) / (1000 * 60);
+                    setCanBid(timeLeft > 15);
                 } else {
                     setError('Product not found');
                 }
@@ -70,25 +70,6 @@ const ProductDisplay = () => {
 
     const handleAddToReminder = () => {
         addToCart(product.name);
-    };
-
-    const handleBid = async (amount) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/place-bid`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: productName, bid: amount })
-            });
-
-            if (response.ok) {
-                const { newBid } = await response.json();
-                setCurrentBid(newBid); // Update the current bid on successful bid
-            } else {
-                console.error("Failed to place bid");
-            }
-        } catch (error) {
-            console.error("Error placing bid:", error);
-        }
     };
 
     return (
@@ -132,9 +113,10 @@ const ProductDisplay = () => {
             <BiddingModal 
                 isOpen={isModalOpen} 
                 onClose={() => setModalOpen(false)} 
-                onBid={handleBid} 
                 currentBid={currentBid} // Pass current bid to modal
                 startingBid={product.startingBid} // Pass starting bid to modal
+                userId={userId}
+                watchId={product._id}
             />
         </div>
     );

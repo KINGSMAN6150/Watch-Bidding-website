@@ -15,7 +15,7 @@ const ReminderItems = () => {
 
     const fetchProductDetails = async (productName) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/collection?name=${encodeURIComponent(productName)}`);
+            const response = await fetch(`http://localhost:3000/api/collection?name=${encodeURIComponent(productName)}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

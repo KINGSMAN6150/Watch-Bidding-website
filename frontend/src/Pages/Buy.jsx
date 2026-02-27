@@ -9,7 +9,7 @@ const Buy = () => {
     useEffect(() => {
         const fetchCollection = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/collection'); // Fetch from the new endpoint
+                const response = await fetch('http://localhost:3000/api/collection'); // Fetch from the new endpoint
                 const data = await response.json();
                 setCollection(data);
             } catch (error) {

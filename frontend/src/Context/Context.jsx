@@ -17,7 +17,7 @@ const ShopContextProvider = (props) => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/collection");
+                const response = await fetch("http://localhost:3000/api/collection");
                 const data = await response.json();
                 setProducts(data);
             } catch (error) {
@@ -36,20 +36,22 @@ const ShopContextProvider = (props) => {
         }
     }, []);
 
-    // Save cartItems to localStorage whenever it changes
     useEffect(() => {
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // User login and logout management
     const loginUser = (userData) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('userId', userData.id);
+        localStorage.setItem('token', userData.token);
     };
 
     const logoutUser = () => {
         setUser(null);
         localStorage.removeItem('user');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('token');
     };
 
     const getUserFirstLetter = () => user ? user.name.charAt(0).toUpperCase() : null;

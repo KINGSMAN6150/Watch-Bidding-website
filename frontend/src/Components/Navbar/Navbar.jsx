@@ -39,7 +39,7 @@ const Navbar = () => {
                     {menu === 'pricing' && <hr />}
                 </li>
                 <li onClick={() => setMenu("about-us")} className={menu === 'about-us' ? 'active' : ''}>
-                    <Link style={{ textDecoration: "none", color: "white" }} to='/Aboutus'>About Us</Link>
+                    <Link style={{ textDecoration: "none", color: "white" }} to='/about'>About Us</Link>
                     {menu === 'about-us' && <hr />}
                 </li>
             </ul>
