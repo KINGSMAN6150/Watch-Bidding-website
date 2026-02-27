@@ -11,7 +11,7 @@ const Buy = () => {
     useEffect(() => {
         const fetchCollection = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/collection');
+                const response = await fetch('http://localhost:3000/api/collection');
                 const data = await response.json();
                 setCollection(data);
                 setSortedCollection(data); 
