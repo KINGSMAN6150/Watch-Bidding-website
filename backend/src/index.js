@@ -33,6 +33,38 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
+
+    socket.on('place-bid', async ({ watchId, amount, userId }) => {
+        try {
+            const Watch = require('../models/Watch.js');
+            const watch = await Watch.findById(watchId);
+
+            if (!watch) {
+                return socket.emit('bid-error', { message: 'Watch not Found' });
+            }
+            if (watch.auction_end_time < new Date()) {
+                return socket.emit('bid-error', { message: 'Auction has ended' });
+            }
+            if (amount <= watch.currentBid) {
+                return socket.emit('bid-error', {
+                    message: `Bid must be higher than current bid of ₹ ${watch.currentBid}`,
+                });
+            }
+            watch.currentBid = amount;
+            watch.bids.push({ bidder: userId, amount, timestamp: new Date() });
+
+            await watch.save();
+            io.to(watchId).emit('bid-updated', {
+                watchId,
+                newBid: amount,
+                bidderId: userId,
+            });
+        } catch (_err) {
+            socket.emit('bid-error', {
+                message: 'Server error Placing Bid',
+            });
+        }
+    });
 });
 
 app.use(cors());
