@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-card;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent;
+  }
+}
+
+@layer components {
+  /* Glassmorphism card */
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+
+  /* Luxury button */
+  .btn-primary {
+    @apply bg-accent hover:bg-accent-hover text-white font-medium px-6 py-2.5 rounded-lg transition-all duration-200 hover:shadow-accent-glow active:scale-95;
+  }
+
+  .btn-gold {
+    @apply bg-gold hover:bg-gold-light text-black font-semibold px-6 py-2.5 rounded-lg transition-all duration-200 hover:shadow-gold-glow active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply border border-border hover:border-accent text-foreground hover:text-accent px-6 py-2.5 rounded-lg transition-all duration-200;
+  }
+
+  /* Card */
+  .auction-card {
+    @apply bg-card border border-border rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover hover:border-accent/30;
+  }
+
+  /* Live badge */
+  .live-badge {
+    @apply inline-flex items-center gap-1.5 bg-danger/10 border border-danger/30 text-danger text-xs font-semibold px-2 py-0.5 rounded-full;
+  }
+
+  /* Section container */
+  .container-xl {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full bg-elevated border border-border rounded-lg px-4 py-2.5 text-foreground placeholder-muted focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors duration-200;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-accent-gradient bg-clip-text text-transparent;
+  }
+}
